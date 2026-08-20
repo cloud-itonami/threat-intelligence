@@ -1,47 +1,39 @@
-# etzhayyim-project-threat-intelligence
+# threat-intelligence
 
-Public Threat Intelligence (TI) project for collecting, deduplicating, and publishing cybercrime-related IOCs (email addresses, URLs, domains, IPs, etc).
+Public Threat Intelligence (TI) project: a registry of cybercrime-related IOCs
+(indicators of compromise — IPs, domains, URLs, file hashes, emails, CVEs) with
+per-indicator confidence and TLP sharing class.
 
-## Components
+Indicator data here is published and non-PII.
 
-- `legacy-runtime/ti-collector-m7t8k2p1`: Ingest + extract + store API (App service invocation).
-- `wasm/ti-ui-n3q6v8s4/svelte`: Public SvelteKit UI for searching and exporting indicators.
+**Start here: [`docs/operator-quickstart.md`](docs/operator-quickstart.md)** —
+install, typecheck, and run the test suite, with the observed output of each
+step.
 
-## Local Development (Quick Start)
+## What is in this repo
 
-1. Start legacy runtime + the collector service:
+- `kotoba/` — the IOC registry reference implementation (TypeScript, on
+  `@etzhayyim/sdk`; AT PDS records, no read-write vendor DB). Exports
+  `registerIndicator` / `getIndicator` / `listIndicators` / `coverage`, and is
+  covered by a 10-test vitest suite that runs fully in memory against
+  `@etzhayyim/sdk-mock` — no network and no credentials.
+- `PROJECT.jsonld`, `README.edn`, `migration.edn`, `NOTICE` — declarations and
+  provenance records.
+- `appview/README.md` — placeholder for a staged App-services migration.
 
-```bash
-cd 60-apps/etzhayyim-project-threat-intelligence/legacy-runtime/ti-collector-m7t8k2p1
-go test ./...
+## What is *not* in this repo
 
-# Example (requires legacy runtime installed):
-# legacy-runtime run --app-id ti-collector --app-port 8080 --legacy-runtime-http-port 3500 -- go run ./cmd/server
-```
+Earlier revisions of this README described a `legacy-runtime/ti-collector-*`
+ingest service and a `wasm/ti-ui-*/svelte` search UI, and gave a quickstart that
+began by `cd`-ing into `60-apps/etzhayyim-project-threat-intelligence/…`.
 
-### Resources JSON-LD Output (resources.etzhayyim.com)
+Those components did not come across when this repo was extracted from
+`etzhayyim/root` (see `migration.edn`), and none of those paths exist here. The
+upstream source path recorded in `migration.edn` no longer resolves either. The
+instructions were therefore unfollowable, and have been removed rather than left
+in place to be discovered by whoever tried them next.
 
-On ingest, the collector writes JSON-LD entity files into:
+## Licence
 
-- `60-apps/etzhayyim-project-resources/content/ti/**`
-
-Optional automation:
-
-- `RESOURCES_GIT_AUTOCOMMIT=true` to `git add` + `git commit` after writing.
-- `RESOURCES_GIT_AUTOPUSH=true` to also push `origin HEAD`.
-
-2. Ingest sample data via App service invocation:
-
-```bash
-curl -sS "http://127.0.0.1:3500/v1.0/invoke/ti-collector/method/api/v1/ingest" \
-  -H 'content-type: application/json' \
-  -d '{"source":"manual","text":"contact: badguy@example.com hxxps://evil[.]example/path 1.2.3.4"}' | jq .
-```
-
-3. Start the UI:
-
-```bash
-cd 60-apps/etzhayyim-project-threat-intelligence/wasm/ti-ui-n3q6v8s4/svelte
-pnpm i
-VITE_PUBLIC_TI_API_BASE_URL="http://127.0.0.1:3500/v1.0/invoke/ti-collector/method" pnpm dev
-```
+Apache License 2.0 with the etzhayyim Charter Compliance Rider v3.1 — see
+`NOTICE`.
