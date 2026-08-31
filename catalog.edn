@@ -1,0 +1,169 @@
+;; Public threat-intelligence source catalog.
+;;
+;; `IndicatorRecord.source` (kotoba/src/types.ts) is a free-form string, and
+;; `coverage()` groups by it — so the registry can report `bySource` counts for
+;; source names that nothing ever defined. This file is that definition: the
+;; set of public feeds a collector for this registry may draw from, keyed by
+;; the exact string to write into `source`.
+;;
+;; Scope: every entry is a feed that is served over HTTPS to anonymous clients
+;; and carries no redistribution embargo of its own, so `:source/tlp` is
+;; :white (TLP:CLEAR) throughout — that is the observed access condition, not a
+;; licence opinion. Consult `:source/homepage` before redistributing in bulk;
+;; several operators ask for attribution.
+;;
+;; `:source/indicator-types` is drawn from the `IndicatorType` union in
+;; kotoba/src/types.ts and lists the types the feed's own payload actually
+;; carries — read off its header row or a sample of its rows, not inferred
+;; from the feed's name.
+;;
+;; Every URL here returned 2xx with a non-empty indicator payload when the
+;; catalog was written. Re-check with:
+;;
+;;     nbb scripts/verify-catalog.cljs --live
+;;
+;; and see docs/operator-quickstart.md for the observed output of that run.
+;; Three candidates were dropped rather than listed, all of which a status
+;; check alone would have waved through:
+;;
+;;   - abuse.ch SSLBL (sslipblacklist.csv) — HTTP 200, and the body says
+;;     "ATTENTION: This list has been deprecated on 2025-01-03". Thirteen
+;;     lines, every one of them a comment.
+;;   - botvrij.eu `ioclist.domain` — HTTP 200, zero non-comment lines.
+;;   - osint.digitalside.it `latestdomains.txt` — connection failure.
+;;
+;; The first two are why `verify-catalog.cljs` counts payload lines instead of
+;; trusting the status code: a feed that has stopped carrying indicators
+;; answers a reachability check exactly like one that never stopped.
+
+[{:source/id "cisa-kev"
+  :source/name "CISA Known Exploited Vulnerabilities Catalog"
+  :source/operator "Cybersecurity and Infrastructure Security Agency (United States)"
+  :source/homepage "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
+  :source/url "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
+  :source/format :json
+  :source/indicator-types [:cve]
+  :source/tlp :white
+  :source/authentication :none
+  :source/note "Vulnerabilities carrying evidence of active exploitation. The document self-reports `catalogVersion` and `count`, so staleness is checkable without diffing."}
+
+ {:source/id "nvd-cve"
+  :source/name "NVD CVE API 2.0"
+  :source/operator "National Institute of Standards and Technology (United States)"
+  :source/homepage "https://nvd.nist.gov/developers/vulnerabilities"
+  :source/url "https://services.nvd.nist.gov/rest/json/cves/2.0"
+  :source/format :json
+  :source/indicator-types [:cve]
+  :source/tlp :white
+  :source/authentication :none
+  :source/note "Anonymous access is rate-limited to a far lower ceiling than key-holding access; a collector polling this without a key will be throttled, not blocked."}
+
+ {:source/id "abusech-urlhaus"
+  :source/name "abuse.ch URLhaus (recent URLs)"
+  :source/operator "abuse.ch"
+  :source/homepage "https://urlhaus.abuse.ch/"
+  :source/url "https://urlhaus.abuse.ch/downloads/csv_recent/"
+  :source/format :csv
+  :source/indicator-types [:url]
+  :source/tlp :white
+  :source/authentication :none
+  :source/note "Columns id,dateadded,url,url_status,last_online,threat,tags,urlhaus_link,reporter. Malware-distribution URLs only — this dump carries no hashes, despite URLhaus holding them elsewhere."}
+
+ {:source/id "abusech-malwarebazaar"
+  :source/name "abuse.ch MalwareBazaar (recent samples)"
+  :source/operator "abuse.ch"
+  :source/homepage "https://bazaar.abuse.ch/"
+  :source/url "https://bazaar.abuse.ch/export/csv/recent/"
+  :source/format :csv
+  :source/indicator-types [:sha256 :sha1 :md5]
+  :source/tlp :white
+  :source/authentication :none
+  :source/note "Header row names sha256_hash, md5_hash and sha1_hash explicitly, so all three hash types can be registered from one row."}
+
+ {:source/id "abusech-threatfox"
+  :source/name "abuse.ch ThreatFox (recent IOCs)"
+  :source/operator "abuse.ch"
+  :source/homepage "https://threatfox.abuse.ch/"
+  :source/url "https://threatfox.abuse.ch/export/csv/recent/"
+  :source/format :csv
+  :source/indicator-types [:domain :ipv4 :url :sha256 :sha1 :md5]
+  :source/tlp :white
+  :source/authentication :none
+  :source/note "The `ioc_type` column carries domain, ip:port, url, md5_hash, sha1_hash and sha256_hash. `ip:port` needs the port split off before it will pass isValidIndicator(\"ipv4\", …). Rows also carry confidence_level 0-100, which must be scaled to the registry's 0-1000 permille."}
+
+ {:source/id "abusech-feodotracker"
+  :source/name "abuse.ch Feodo Tracker botnet C2 IP blocklist"
+  :source/operator "abuse.ch"
+  :source/homepage "https://feodotracker.abuse.ch/"
+  :source/url "https://feodotracker.abuse.ch/downloads/ipblocklist.csv"
+  :source/format :csv
+  :source/indicator-types [:ipv4]
+  :source/tlp :white
+  :source/authentication :none
+  :source/note "Fetches cleanly and still carries entries, but is not actively maintained — the dump's own `Last updated` header was around six months behind the fetch date when this catalog was written. Treat entries as historical unless that header has moved. Its sibling SSLBL feed went further and was dropped from this catalog outright; see the header comment."}
+
+ {:source/id "openphish"
+  :source/name "OpenPhish community phishing feed"
+  :source/operator "OpenPhish"
+  :source/homepage "https://openphish.com/"
+  :source/url "https://openphish.com/feed.txt"
+  :source/format :text
+  :source/indicator-types [:url]
+  :source/tlp :white
+  :source/authentication :none
+  :source/note "One URL per line, no header and no timestamps. The community feed is a rolling window, so absence from it is not evidence a URL was never phishing."}
+
+ {:source/id "spamhaus-drop"
+  :source/name "Spamhaus DROP (Do not Route Or Peer), IPv4"
+  :source/operator "The Spamhaus Project"
+  :source/homepage "https://www.spamhaus.org/blocklists/do-not-route-or-peer/"
+  :source/url "https://www.spamhaus.org/drop/drop_v4.json"
+  :source/format :jsonl
+  :source/indicator-types [:ipv4]
+  :source/tlp :white
+  :source/authentication :none
+  :source/note "One JSON object per line: {cidr, sblid, rir}. Entries are CIDR ranges, not single addresses — isValidIndicator(\"ipv4\", …) rejects them as written, so a collector must expand or store the range under its own type."}
+
+ {:source/id "tor-exit-list"
+  :source/name "Tor bulk exit list"
+  :source/operator "The Tor Project"
+  :source/homepage "https://check.torproject.org/"
+  :source/url "https://check.torproject.org/torbulkexitlist"
+  :source/format :text
+  :source/indicator-types [:ipv4]
+  :source/tlp :white
+  :source/authentication :none
+  :source/note "Not malicious infrastructure. Included because operators routinely need to distinguish Tor egress from attacker-controlled hosts; register at low confidence and tag accordingly, or the registry will assert something it does not mean."}
+
+ {:source/id "blocklist-de"
+  :source/name "blocklist.de aggregated attacker IPs"
+  :source/operator "blocklist.de"
+  :source/homepage "https://www.blocklist.de/en/index.html"
+  :source/url "https://lists.blocklist.de/lists/all.txt"
+  :source/format :text
+  :source/indicator-types [:ipv4]
+  :source/tlp :white
+  :source/authentication :none
+  :source/note "Reported by participating fail2ban installations, so entries reflect attempted logins against volunteers rather than confirmed compromise."}
+
+ {:source/id "cins-army"
+  :source/name "CINS Score Army list"
+  :source/operator "Sentinel IPS / Collective Intelligence Network Security"
+  :source/homepage "https://cinsscore.com/"
+  :source/url "https://cinsscore.com/list/ci-badguys.txt"
+  :source/format :text
+  :source/indicator-types [:ipv4]
+  :source/tlp :white
+  :source/authentication :none
+  :source/note "The free subset of the CINS score set; the scores themselves are not in this file, so registered entries carry no per-indicator confidence from the source."}
+
+ {:source/id "emergingthreats-compromised"
+  :source/name "Emerging Threats compromised IPs"
+  :source/operator "Proofpoint Emerging Threats"
+  :source/homepage "https://rules.emergingthreats.net/"
+  :source/url "https://rules.emergingthreats.net/blockrules/compromised-ips.txt"
+  :source/format :text
+  :source/indicator-types [:ipv4]
+  :source/tlp :white
+  :source/authentication :none
+  :source/note "Hosts believed compromised rather than attacker-owned, so entries age quickly; lastSeen matters more than firstSeen for this source."}]
