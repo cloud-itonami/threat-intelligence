@@ -17,6 +17,17 @@ step.
   `registerIndicator` / `getIndicator` / `listIndicators` / `coverage`, and is
   covered by a 10-test vitest suite that runs fully in memory against
   `@etzhayyim/sdk-mock` — no network and no credentials.
+- `catalog.edn` — the public threat-intelligence feeds a collector for this
+  registry may draw from, keyed by the exact string to write into an
+  indicator's `source` field. Twelve sources, each with the indicator types its
+  payload actually carries, read off the feed rather than inferred from its
+  name. Every URL in it returned 2xx with a non-empty payload when it was
+  written; three further candidates were dropped, two of which returned 200 and
+  served nothing but comments.
+- `scripts/verify-catalog.cljs` — checks `catalog.edn` against the
+  `IndicatorType` and `Tlp` unions in `kotoba/src/types.ts`, and with `--live`
+  fetches every URL. Exits 0 clean / 1 findings / **2 refused**, so "could not
+  check" is never reported as "checked and fine".
 - `PROJECT.jsonld`, `README.edn`, `migration.edn`, `NOTICE` — declarations and
   provenance records.
 - `appview/README.md` — placeholder for a staged App-services migration.
