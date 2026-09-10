@@ -20,7 +20,7 @@
 ;; Every URL here returned 2xx with a non-empty indicator payload when the
 ;; catalog was written. Re-check with:
 ;;
-;;     nbb scripts/verify-catalog.cljs --live
+;;     nbb scripts/verify-catalog.kotoba --live
 ;;
 ;; and see docs/operator-quickstart.md for the observed output of that run.
 ;; Three candidates were dropped rather than listed, all of which a status

@@ -137,8 +137,8 @@ exists because `coverage()` groups by `source` and nothing defined what a
 `source` was, so `bySource` could report counts for names no one had agreed on.
 
 ```bash
-nbb scripts/verify-catalog.cljs           # structure only, no network
-nbb scripts/verify-catalog.cljs --live    # also fetch every URL
+nbb scripts/verify-catalog.kotoba           # structure only, no network
+nbb scripts/verify-catalog.kotoba --live    # also fetch every URL
 ```
 
 `nbb` is the only extra tool required, and only for this step; `npx --yes nbb`
@@ -147,12 +147,12 @@ works if you do not have it installed (verified, `nbb v1.5.212`).
 Observed on 2026-09-01:
 
 ```
-$ nbb scripts/verify-catalog.cljs
+$ nbb scripts/verify-catalog.kotoba
 SCANNED	12 sources
 VOCABULARY	9 indicator types, 4 TLP classes, from kotoba/src/types.ts
 OK — every source is well-formed (structure only; pass --live to fetch)
 
-$ nbb scripts/verify-catalog.cljs --live
+$ nbb scripts/verify-catalog.kotoba --live
 SCANNED	12 sources, 24 URLs fetched
 VOCABULARY	9 indicator types, 4 TLP classes, from kotoba/src/types.ts
 OK — every source is well-formed and every URL served a payload
@@ -204,7 +204,7 @@ As with the test suite, break it and watch it name what you broke:
 ```bash
 cp catalog.edn /tmp/catalog.edn.bak
 sed -i '' 's|:source/format :jsonl|:source/format :parquet|' catalog.edn
-nbb scripts/verify-catalog.cljs          # → [format] …, exit 1
+nbb scripts/verify-catalog.kotoba          # → [format] …, exit 1
 cp /tmp/catalog.edn.bak catalog.edn      # restore
 ```
 
@@ -252,5 +252,5 @@ something you have failed to find.
 `catalog.edn` does not close this gap — it is the collector's input list, not
 the collector. It says which public feeds a collector *would* read and what
 each one actually carries; nothing in this repo fetches them except
-`scripts/verify-catalog.cljs`, which checks that they answer and then throws
+`scripts/verify-catalog.kotoba`, which checks that they answer and then throws
 the payload away.
