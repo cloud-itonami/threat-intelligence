@@ -24,7 +24,7 @@ step.
   name. Every URL in it returned 2xx with a non-empty payload when it was
   written; three further candidates were dropped, two of which returned 200 and
   served nothing but comments.
-- `scripts/verify-catalog.cljs` — checks `catalog.edn` against the
+- `scripts/verify-catalog.kotoba` — checks `catalog.edn` against the
   `IndicatorType` and `Tlp` unions in `kotoba/src/types.ts`, and with `--live`
   fetches every URL. Exits 0 clean / 1 findings / **2 refused**, so "could not
   check" is never reported as "checked and fine".
