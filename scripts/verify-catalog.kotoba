@@ -1,9 +1,9 @@
-#!/usr/bin/env nbb
+#!/usr/bin/env kbb
 ;; Check catalog.edn against the registry's own vocabulary, and optionally
 ;; against the live feeds.
 ;;
-;;     nbb scripts/verify-catalog.cljs            structure only, no network
-;;     nbb scripts/verify-catalog.cljs --live     also fetch every URL
+;;     kbb --backend sci scripts/verify-catalog.cljk            structure only, no network
+;;     kbb --backend sci scripts/verify-catalog.cljk --live     also fetch every URL
 ;;
 ;; Exit codes are three-valued on purpose:
 ;;
